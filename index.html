@@ -1,0 +1,1284 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Creador de Videos con Avatar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Archivo+Narrow:wght@600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #edeef0;
+        --panel: #ffffff;
+        --panel-2: #f4f4f6;
+        --ink: #141519;
+        --muted: #5b5f68;
+        --line: #d8d9de;
+        --accent: #a50044;
+        --accent-ink: #ffffff;
+        --accent-soft: rgba(165, 0, 68, 0.08);
+        --blue: #004d98;
+        --ok: #177245;
+        --warn-bg: #fdf3e0;
+        --warn-ink: #7a5200;
+        --warn-line: #e8cf9a;
+        --stage-bg: #000000;
+        --shadow: 0 10px 30px rgba(16, 18, 24, 0.10);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0c0d10;
+          --panel: #15161a;
+          --panel-2: #1c1e23;
+          --ink: #f2f3f5;
+          --muted: #9ba1ab;
+          --line: #2a2c33;
+          --accent: #ffc72c;
+          --accent-ink: #171204;
+          --accent-soft: rgba(255, 199, 44, 0.10);
+          --blue: #6ea8ff;
+          --ok: #4cc97e;
+          --warn-bg: #2b2110;
+          --warn-ink: #f0c569;
+          --warn-line: #57451c;
+          --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+        }
+      }
+      * { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+        font-size: 16px;
+        line-height: 1.45;
+      }
+      button, select, textarea, input { font: inherit; color: inherit; }
+      button, [role="button"], select, summary { min-height: 2.5rem; }
+      input[type="range"] { min-height: 2.25rem; }
+      .wrap { max-width: 1240px; margin: 0 auto; padding: 20px 16px 56px; }
+
+      /* ---------- Encabezado ---------- */
+      .top { display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-end; justify-content: space-between; margin: 6px 0 20px; }
+      .top h1 { margin: 0 0 6px; font-size: clamp(26px, 4.5vw, 40px); font-weight: 900; letter-spacing: -0.02em; line-height: 1.05; }
+      .lede { margin: 0; max-width: 56ch; color: var(--muted); font-size: 16.5px; }
+      .flow { list-style: none; display: flex; gap: 8px; margin: 0; padding: 0; flex-wrap: wrap; }
+      .flow li { display: flex; align-items: center; gap: 8px; background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px 7px 8px; font-weight: 700; font-size: 14px; }
+      .flow b { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-size: 13px; }
+
+      /* ---------- Layout ---------- */
+      .layout { display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 18px; align-items: start; }
+      @media (max-width: 960px) { .layout { grid-template-columns: minmax(0, 1fr); } }
+      .col-main { display: grid; gap: 18px; min-width: 0; }
+
+      .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 20px; box-shadow: var(--shadow); }
+      .card-head { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 16px; }
+      .card-head .num { flex: none; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 10px; background: var(--accent); color: var(--accent-ink); font-weight: 900; font-size: 19px; }
+      .card-head h2 { margin: 1px 0 3px; font-size: 21px; font-weight: 800; letter-spacing: -0.01em; }
+      .card-head p { margin: 0; color: var(--muted); font-size: 14.5px; }
+      .card-head .spacer { flex: 1; }
+
+      /* ---------- Botones y controles ---------- */
+      .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--line); background: var(--panel-2); color: var(--ink); border-radius: 10px; padding: 9px 16px; font-weight: 700; font-size: 15px; cursor: pointer; text-decoration: none; min-height: 2.75rem; }
+      .btn:hover { border-color: var(--muted); }
+      .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+      .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+      .btn.primary:hover { filter: brightness(1.07); }
+      .btn.ghost { background: transparent; }
+      .btn.big { width: 100%; font-size: 17px; padding: 14px; border-radius: 12px; }
+      .btn.small { min-height: 2.25rem; padding: 5px 12px; font-size: 14px; }
+      .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+      .row.between { justify-content: space-between; }
+      .field { display: grid; gap: 6px; margin-bottom: 14px; }
+      .field > label, .field-label { font-weight: 700; font-size: 14.5px; }
+      .field .hint { color: var(--muted); font-size: 13.5px; font-weight: 500; }
+      select, textarea { width: 100%; background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+      textarea { resize: vertical; min-height: 118px; line-height: 1.5; }
+      select:focus, textarea:focus, input:focus-visible, button:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; }
+      .seg { display: inline-flex; background: var(--panel-2); border: 1px solid var(--line); border-radius: 11px; padding: 3px; gap: 3px; flex-wrap: wrap; }
+      .seg button { border: 0; background: transparent; border-radius: 8px; padding: 7px 14px; font-weight: 700; font-size: 14px; cursor: pointer; color: var(--muted); min-height: 2.25rem; }
+      .seg button[aria-pressed="true"] { background: var(--panel); color: var(--ink); box-shadow: 0 1px 5px rgba(0,0,0,0.18); }
+      .slider-row { display: grid; grid-template-columns: 130px 1fr 52px; gap: 10px; align-items: center; margin-bottom: 6px; }
+      .slider-row label { font-weight: 600; font-size: 14.5px; }
+      .slider-row output { font-variant-numeric: tabular-nums; text-align: right; font-weight: 700; font-size: 14px; color: var(--muted); }
+      input[type="range"] { width: 100%; accent-color: var(--accent); }
+      .cols-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+      @media (max-width: 620px) { .cols-2 { grid-template-columns: 1fr; } .slider-row { grid-template-columns: 96px 1fr 58px; } }
+      .note { color: var(--muted); font-size: 14px; margin: 8px 0 0; }
+      .status { font-size: 14.5px; margin: 10px 0 0; min-height: 1.2em; }
+      .status.err { color: #d33; }
+      @media (prefers-color-scheme: dark) { .status.err { color: #ff8a7a; } }
+      .hidden { display: none !important; }
+      .warn { background: var(--warn-bg); color: var(--warn-ink); border: 1px solid var(--warn-line); border-radius: 10px; padding: 10px 12px; font-size: 14px; margin: 12px 0 0; }
+
+      /* ---------- Subida de fotos ---------- */
+      .uploads { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+      @media (max-width: 620px) { .uploads { grid-template-columns: 1fr; } }
+      .up { border: 2px dashed var(--line); border-radius: 14px; padding: 14px; text-align: center; background: var(--panel-2); transition: border-color .15s; }
+      .up.drag { border-color: var(--accent); }
+      .up.has { border-style: solid; text-align: left; }
+      .up .thumb { display: none; width: 100%; aspect-ratio: 4 / 3; object-fit: contain; background: #000; border-radius: 9px; margin-bottom: 10px; }
+      .up.has .thumb { display: block; }
+      .up .up-title { font-weight: 800; font-size: 16px; margin: 2px 0 2px; }
+      .up .up-sub { color: var(--muted); font-size: 13.5px; margin: 0 0 12px; }
+      .up .meta { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; margin: 0 0 10px; overflow-wrap: anywhere; }
+      .up .meta b { color: var(--ink); }
+
+      /* ---------- Audio ---------- */
+      #audioBox { margin-top: 14px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+      #audioBox audio { width: 100%; }
+      .char-meta { font-size: 13.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+      /* ---------- Video / resultado ---------- */
+      .progress { height: 10px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 99px; overflow: hidden; margin: 10px 0; }
+      .progress i { display: block; height: 100%; width: 0%; background: var(--accent); transition: width .25s linear; }
+      #resultBox { margin-top: 16px; }
+      #resultBox video { width: 100%; max-height: 480px; background: #000; border-radius: 12px; }
+      .result-meta { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 14px; margin: 10px 0; }
+      .result-meta b { color: var(--ink); }
+      .swatches { display: inline-flex; gap: 7px; align-items: center; }
+      .swatch { width: 34px; height: 34px; border-radius: 9px; border: 2px solid var(--line); cursor: pointer; padding: 0; }
+      .swatch[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+      input[type="color"] { width: 46px; height: 38px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel-2); padding: 3px; cursor: pointer; }
+
+      /* ---------- Vista previa ---------- */
+      .col-side { min-width: 0; }
+      .stage-card { position: sticky; top: 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px; box-shadow: var(--shadow); }
+      @media (max-width: 960px) { .stage-card { position: static; } }
+      .stage-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+      .stage-head .t { font-weight: 800; font-size: 16px; }
+      .badge { font-size: 12.5px; font-weight: 700; border-radius: 999px; padding: 4px 11px; background: var(--panel-2); border: 1px solid var(--line); color: var(--muted); }
+      .badge.live { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+      .stage { position: relative; width: 100%; aspect-ratio: 2 / 3; background: var(--stage-bg); border-radius: 12px; overflow: hidden; }
+      .stage img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+      #imgAbierta { opacity: 0; }
+      .stage.open #imgAbierta { opacity: 1; }
+      .stage .breathe { animation: breathe 3.6s ease-in-out infinite; }
+      @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.012); } }
+      @media (prefers-reduced-motion: reduce) { .stage .breathe { animation: none; } }
+      .stage-empty { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 22px; color: #a7abb3; font-size: 15px; }
+      .stage-bar { position: absolute; left: 0; right: 0; bottom: 0; padding: 26px 12px 10px; background: linear-gradient(transparent, rgba(0,0,0,0.72)); color: #fff; display: flex; gap: 10px; align-items: flex-end; }
+      .eq { display: inline-flex; gap: 2.5px; align-items: flex-end; height: 18px; flex: none; padding-bottom: 2px; }
+      .eq i { width: 3.5px; height: 4px; background: #ffc72c; border-radius: 2px; }
+      .stage.speaking .eq i { animation: eq 0.5s ease-in-out infinite alternate; }
+      .stage.speaking .eq i:nth-child(2) { animation-delay: 0.12s; } .stage.speaking .eq i:nth-child(3) { animation-delay: 0.24s; }
+      .stage.speaking .eq i:nth-child(4) { animation-delay: 0.06s; } .stage.speaking .eq i:nth-child(5) { animation-delay: 0.18s; }
+      @keyframes eq { from { height: 4px; } to { height: 17px; } }
+      @media (prefers-reduced-motion: reduce) { .stage.speaking .eq i { animation: none; height: 10px; } }
+      .stage-bar .w { font-size: 13.5px; line-height: 1.35; overflow-wrap: anywhere; }
+      .caption { position: absolute; left: 50%; transform: translateX(-50%); bottom: 52px; max-width: 88%; background: rgba(0,0,0,0.62); color: #fff; font-weight: 800; font-size: clamp(14px, 2.6vw, 19px); line-height: 1.3; text-align: center; padding: 7px 13px; border-radius: 9px; }
+      .stage-controls { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+      .stage-res { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+      .checklist { list-style: none; margin: 14px 0 0; padding: 12px 0 0; border-top: 1px solid var(--line); display: grid; gap: 7px; }
+      .checklist li { display: flex; gap: 9px; align-items: center; font-size: 14.5px; color: var(--muted); font-weight: 600; }
+      .checklist li::before { content: ""; flex: none; width: 19px; height: 19px; border-radius: 50%; border: 2px solid var(--line); }
+      .checklist li.done { color: var(--ink); }
+      .checklist li.done::before { border-color: var(--ok); background: var(--ok); box-shadow: inset 0 0 0 3px var(--panel); }
+
+      .tips { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 20px; }
+      .tips h2 { margin: 0 0 10px; font-size: 18px; font-weight: 800; }
+      .tips ul { margin: 0; padding-left: 20px; display: grid; gap: 7px; color: var(--muted); font-size: 14.5px; }
+      .tips b { color: var(--ink); }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="top">
+        <div>
+          <h1>Creador de videos con avatar</h1>
+          <p class="lede">Sube las dos fotos de tu personaje —boca cerrada y boca abierta—, elige una voz, pega lo que quieres que diga y descarga el video a la resolución completa de tus fotos.</p>
+        </div>
+        <ol class="flow">
+          <li><b>1</b> Tus fotos</li>
+          <li><b>2</b> Voz y texto</li>
+          <li><b>3</b> Tu video</li>
+        </ol>
+      </header>
+
+      <div class="layout">
+        <div class="col-main">
+
+          <!-- PASO 1 -->
+          <section class="card" aria-labelledby="h-paso1">
+            <div class="card-head">
+              <span class="num">1</span>
+              <div>
+                <h2 id="h-paso1">Tus fotos</h2>
+                <p>La misma imagen en dos versiones: una con la boca cerrada y otra con la boca abierta. Mismo encuadre y mismo tamaño en las dos.</p>
+              </div>
+              <span class="spacer"></span>
+              <button class="btn ghost small" id="btnEjemplo" type="button">Probar con el ejemplo</button>
+            </div>
+
+            <div class="uploads">
+              <div class="up" id="upCerrada">
+                <img class="thumb" id="thumbCerrada" alt="Vista previa de la foto con la boca cerrada" />
+                <p class="up-title">Boca cerrada</p>
+                <p class="up-sub">La imagen en reposo, con la boca cerrada.</p>
+                <p class="meta hidden" id="metaCerrada"></p>
+                <div class="row" style="justify-content:center">
+                  <button class="btn small" type="button" data-pick="cerrada">Subir foto</button>
+                  <button class="btn ghost small hidden" type="button" data-remove="cerrada">Quitar</button>
+                </div>
+                <input class="hidden" type="file" id="fileCerrada" accept="image/*" />
+              </div>
+              <div class="up" id="upAbierta">
+                <img class="thumb" id="thumbAbierta" alt="Vista previa de la foto con la boca abierta" />
+                <p class="up-title">Boca abierta</p>
+                <p class="up-sub">La misma imagen, con la boca bien abierta.</p>
+                <p class="meta hidden" id="metaAbierta"></p>
+                <div class="row" style="justify-content:center">
+                  <button class="btn small" type="button" data-pick="abierta">Subir foto</button>
+                  <button class="btn ghost small hidden" type="button" data-remove="abierta">Quitar</button>
+                </div>
+                <input class="hidden" type="file" id="fileAbierta" accept="image/*" />
+              </div>
+            </div>
+
+            <p class="warn hidden" id="warnAspect">Ojo: las dos fotos no tienen la misma proporción. Para que la boca no “salte”, usa dos versiones con el mismo encuadre y la misma proporción.</p>
+
+            <div id="alignBox" class="hidden" style="margin-top:16px">
+              <p class="field-label" style="margin:0 0 8px">Ajuste fino de la foto abierta <span class="hint" style="color:var(--muted); font-weight:500">— muévela hasta que encaje con la cerrada y pulsa «Probar boca»</span></p>
+              <div class="slider-row"><label for="alX">Horizontal</label><input type="range" id="alX" min="-60" max="60" step="1" value="0" /><output id="alXv">0 px</output></div>
+              <div class="slider-row"><label for="alY">Vertical</label><input type="range" id="alY" min="-60" max="60" step="1" value="0" /><output id="alYv">0 px</output></div>
+              <div class="slider-row"><label for="alS">Escala</label><input type="range" id="alS" min="90" max="112" step="0.5" value="100" /><output id="alSv">100%</output></div>
+            </div>
+          </section>
+
+          <!-- PASO 2 -->
+          <section class="card" aria-labelledby="h-paso2">
+            <div class="card-head">
+              <span class="num">2</span>
+              <div>
+                <h2 id="h-paso2">Voz y texto</h2>
+                <p>Pega el guion, elige quién lo dice y genera el audio. La boca del avatar se mueve siguiendo ese audio.</p>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="txt">Lo que va a decir tu avatar</label>
+              <textarea id="txt" maxlength="1200" placeholder="Ejemplo: ¡Qué pasa, culers! Hoy hablamos del partido de anoche… Escribe con puntos y comas: la voz hace pausas donde los pongas."></textarea>
+              <div class="row between">
+                <span class="char-meta" id="charCount">0 / 1200 caracteres</span>
+                <span class="char-meta" id="durEst"></span>
+              </div>
+            </div>
+
+            <div class="field">
+              <span class="field-label" id="engineLabel">Tipo de voz</span>
+              <div class="seg" role="group" aria-labelledby="engineLabel">
+                <button type="button" data-engine="cloud" aria-pressed="true">Voces IA</button>
+                <button type="button" data-engine="device" aria-pressed="false">Voces de tu dispositivo</button>
+              </div>
+            </div>
+
+            <div id="cloudControls">
+              <div class="field">
+                <label for="voiceCloud">Voz</label>
+                <select id="voiceCloud"></select>
+                <span class="hint">Voces neuronales en español. El audio generado queda grabado dentro del video y también puedes descargarlo solo.</span>
+              </div>
+            </div>
+
+            <div id="deviceControls" class="hidden">
+              <div class="field">
+                <label for="voiceDevice">Voz</label>
+                <select id="voiceDevice"></select>
+                <span class="hint" id="deviceHint">Son las voces instaladas en tu teléfono o computadora.</span>
+              </div>
+            </div>
+
+            <div class="slider-row"><label for="rate">Velocidad</label><input type="range" id="rate" min="60" max="140" step="5" value="100" /><output id="rateV">1.00×</output></div>
+            <div class="slider-row"><label for="pitch">Tono</label><input type="range" id="pitch" min="-10" max="10" step="1" value="0" /><output id="pitchV">Normal</output></div>
+
+            <div class="row" style="margin-top:12px">
+              <button class="btn primary" id="btnAudio" type="button" disabled>Generar audio</button>
+              <button class="btn" id="btnPlay" type="button" disabled>Escuchar con el avatar</button>
+              <button class="btn ghost" id="btnStop" type="button" disabled>Detener</button>
+            </div>
+            <p class="status" id="audioStatus" role="status"></p>
+
+            <div id="audioBox" class="hidden">
+              <audio id="audioEl" controls preload="metadata"></audio>
+              <div class="row between" style="margin-top:8px">
+                <span class="char-meta" id="audioMeta"></span>
+                <a class="btn small" id="dlAudio" download="voz-avatar.mp3">Descargar audio MP3</a>
+              </div>
+            </div>
+          </section>
+
+          <!-- PASO 3 -->
+          <section class="card" aria-labelledby="h-paso3">
+            <div class="card-head">
+              <span class="num">3</span>
+              <div>
+                <h2 id="h-paso3">Genera el video</h2>
+                <p>El video se graba en tiempo real mientras el avatar habla, con la resolución que elijas aquí. Al terminar, descárgalo tal cual sale.</p>
+              </div>
+            </div>
+
+            <div class="cols-2">
+              <div class="field">
+                <span class="field-label" id="fmtLabel">Formato y resolución</span>
+                <div class="seg" role="group" aria-labelledby="fmtLabel">
+                  <button type="button" data-format="original" aria-pressed="true">Original</button>
+                  <button type="button" data-format="vertical" aria-pressed="false">Vertical 9:16</button>
+                  <button type="button" data-format="cuadrado" aria-pressed="false">Cuadrado 1:1</button>
+                </div>
+                <span class="hint" id="fmtHint"></span>
+              </div>
+              <div class="field">
+                <span class="field-label" id="qualLabel">Calidad</span>
+                <div class="seg" role="group" aria-labelledby="qualLabel">
+                  <button type="button" data-quality="max" aria-pressed="true">Máxima</button>
+                  <button type="button" data-quality="alta" aria-pressed="false">Alta</button>
+                </div>
+                <span class="hint">Máxima graba a 28 Mbps, un bitrate alto para conservar el detalle de tus fotos; el archivo pesará más.</span>
+              </div>
+              <div class="field">
+                <span class="field-label" id="capLabel">Subtítulos en el video</span>
+                <div class="seg" role="group" aria-labelledby="capLabel">
+                  <button type="button" data-captions="con" aria-pressed="true">Con subtítulos</button>
+                  <button type="button" data-captions="sin" aria-pressed="false">Sin subtítulos</button>
+                </div>
+                <span class="hint">Quedan quemados en la imagen, frase a frase.</span>
+              </div>
+              <div class="field">
+                <span class="field-label" id="headLabel">Movimiento de cabeza</span>
+                <div class="seg" role="group" aria-labelledby="headLabel">
+                  <button type="button" data-head="suave" aria-pressed="true">Suave</button>
+                  <button type="button" data-head="sin" aria-pressed="false">Sin movimiento</button>
+                </div>
+                <span class="hint">Un leve balanceo para que no se vea una foto congelada.</span>
+              </div>
+            </div>
+
+            <div class="field">
+              <span class="field-label">Fondo detrás del avatar</span>
+              <div class="row">
+                <span class="swatches" id="swatches">
+                  <button type="button" class="swatch" data-bg="#000000" style="background:#000000" aria-pressed="true" aria-label="Fondo negro"></button>
+                  <button type="button" class="swatch" data-bg="#ffffff" style="background:#ffffff" aria-pressed="false" aria-label="Fondo blanco"></button>
+                  <button type="button" class="swatch" data-bg="#00a651" style="background:#00a651" aria-pressed="false" aria-label="Fondo verde"></button>
+                  <button type="button" class="swatch" data-bg="#004d98" style="background:#004d98" aria-pressed="false" aria-label="Fondo azul"></button>
+                  <button type="button" class="swatch" data-bg="#a50044" style="background:#a50044" aria-pressed="false" aria-label="Fondo granate"></button>
+                </span>
+                <input type="color" id="bgColor" value="#000000" aria-label="Color de fondo personalizado" />
+              </div>
+            </div>
+
+            <div class="slider-row"><label for="sens">Sensibilidad de la boca</label><input type="range" id="sens" min="0" max="100" step="1" value="45" /><output id="sensV">45</output></div>
+
+            <button class="btn primary big" id="btnVideo" type="button" disabled>Generar video</button>
+
+            <div id="recBox" class="hidden">
+              <div class="progress"><i id="recBar"></i></div>
+              <div class="row between">
+                <span class="status" id="recStatus" role="status">Grabando…</span>
+                <button class="btn small" id="btnCancelRec" type="button">Cancelar</button>
+              </div>
+            </div>
+
+            <div id="resultBox" class="hidden">
+              <video id="resultVideo" controls playsinline></video>
+              <p class="result-meta" id="resultMeta"></p>
+              <div class="row">
+                <a class="btn primary" id="dlVideo" download="avatar-hablando.webm">Descargar video</a>
+                <button class="btn" id="btnAgain" type="button">Generar otra versión</button>
+              </div>
+              <p class="note" id="resultNote"></p>
+            </div>
+          </section>
+
+          <section class="tips" aria-labelledby="h-tips">
+            <h2 id="h-tips">Para que quede bien</h2>
+            <ul>
+              <li><b>Mismo encuadre en las dos fotos.</b> Si la de boca abierta está movida o más grande, corrígela con el ajuste fino que aparece en el paso 1 al subir las dos fotos, hasta que al probar la boca no se note el salto.</li>
+              <li><b>Textos cortos por video.</b> Para un reel, 30–60 segundos de voz van sobrados: unas 400–700 caracteres por toma.</li>
+              <li><b>Puntuación = actuación.</b> La voz respira en los puntos y hace pausas en las comas. Escribe el guion como se habla, no como se lee.</li>
+              <li><b>Resolución.</b> En formato «Original» el video sale con los píxeles exactos de tu foto; en vertical sale a 1080 × 1920, listo para Reels y TikTok.</li>
+            </ul>
+          </section>
+        </div>
+
+        <!-- VISTA PREVIA -->
+        <aside class="col-side">
+          <div class="stage-card">
+            <div class="stage-head">
+              <span class="t">Vista previa</span>
+              <span class="badge" id="stageState">Sin fotos</span>
+            </div>
+            <div class="stage" id="stage">
+              <img id="imgCerrada" class="breathe hidden" alt="Avatar con la boca cerrada" />
+              <img id="imgAbierta" class="hidden" alt="" aria-hidden="true" />
+              <div class="stage-empty" id="stageEmpty">Sube tus dos fotos y aquí verás a tu avatar hablando, con la boca sincronizada con la voz.</div>
+              <div class="caption hidden" id="captionPreview"></div>
+              <div class="stage-bar hidden" id="stageBar">
+                <span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+                <span class="w" id="stageWord"></span>
+              </div>
+            </div>
+            <div class="stage-controls">
+              <button class="btn small" id="btnTestMouth" type="button" disabled>Probar boca</button>
+              <span class="stage-res" id="stageRes"></span>
+            </div>
+            <ul class="checklist">
+              <li data-k="fotos">Fotos subidas</li>
+              <li data-k="texto">Texto escrito</li>
+              <li data-k="audio">Audio listo</li>
+              <li data-k="video">Video generado</li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <script>
+    'use strict';
+    var $ = function (s, r) { return (r || document).querySelector(s); };
+    var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+
+    var S = {
+      cerrada: null, abierta: null,
+      engine: 'cloud',
+      audioBlob: null, audioUrl: null, audioBuf: null, audioWords: [], audioKey: '',
+      deviceReady: false,
+      playing: false, recording: false, cancelRec: false,
+      mouthOpen: false, currentWord: -1,
+      format: 'original', quality: 'max', captions: 'con', head: 'suave',
+      bg: '#000000', sens: 45,
+      align: { x: 0, y: 0, s: 1 },
+      resultUrl: null,
+      actx: null, curSource: null, curUtter: null, playTimer: null, playRaf: 0
+    };
+
+    var els = {};
+    ['txt','charCount','durEst','voiceCloud','voiceDevice','deviceHint','rate','rateV','pitch','pitchV',
+     'btnAudio','btnPlay','btnStop','audioStatus','audioBox','audioEl','audioMeta','dlAudio',
+     'stage','imgCerrada','imgAbierta','stageEmpty','stageBar','stageWord','stageState','stageRes',
+     'captionPreview','btnTestMouth','btnVideo','recBox','recBar','recStatus','btnCancelRec',
+     'resultBox','resultVideo','resultMeta','dlVideo','resultNote','btnAgain','warnAspect','alignBox',
+     'alX','alY','alS','alXv','alYv','alSv','sens','sensV','bgColor','btnEjemplo','fmtHint','cloudControls','deviceControls'
+    ].forEach(function (id) { els[id] = document.getElementById(id); });
+
+    function fmtBytes(n) {
+      if (!n && n !== 0) return '—';
+      if (n < 1024) return n + ' B';
+      if (n < 1048576) return (n / 1024).toFixed(1) + ' KB';
+      return (n / 1048576).toFixed(2) + ' MB';
+    }
+    function fmtDur(s) {
+      if (!isFinite(s) || s == null) return '—';
+      var m = Math.floor(s / 60), ss = Math.round(s % 60);
+      return (m > 0 ? m + ' min ' : '') + ss + ' s';
+    }
+    function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+    function capitalize(k) { return k.charAt(0).toUpperCase() + k.slice(1); }
+
+    function ensureCtx() {
+      if (!S.actx) {
+        var AC = window.AudioContext || window.webkitAudioContext;
+        if (AC) S.actx = new AC();
+      }
+      if (S.actx && S.actx.state === 'suspended') S.actx.resume();
+      return S.actx;
+    }
+
+    /* ================= FOTOS ================= */
+    function setPhoto(key, src, name) {
+      var img = new Image();
+      img.onload = function () {
+        if (S[key] && S[key].own) URL.revokeObjectURL(S[key].url);
+        S[key] = { url: src, img: img, w: img.naturalWidth, h: img.naturalHeight, name: name, own: src.indexOf('blob:') === 0 };
+        renderPhotoUI(key);
+        updateStage();
+        refreshStates();
+      };
+      img.onerror = function () { setStatus('No se pudo leer esa imagen.', true); };
+      img.src = src;
+    }
+    function renderPhotoUI(key) {
+      var up = $('#up' + capitalize(key)), meta = $('#meta' + capitalize(key)), thumb = $('#thumb' + capitalize(key));
+      var data = S[key];
+      up.classList.toggle('has', !!data);
+      $('[data-remove="' + key + '"]').classList.toggle('hidden', !data);
+      if (data) {
+        thumb.src = data.url;
+        meta.classList.remove('hidden');
+        meta.innerHTML = '<b>' + data.w + ' × ' + data.h + ' px</b> · ' + esc(data.name);
+      } else {
+        thumb.removeAttribute('src');
+        meta.classList.add('hidden');
+      }
+    }
+    function clearPhoto(key) {
+      if (S[key] && S[key].own) URL.revokeObjectURL(S[key].url);
+      S[key] = null;
+      renderPhotoUI(key);
+      updateStage();
+      refreshStates();
+    }
+    ['cerrada', 'abierta'].forEach(function (key) {
+      var input = $('#file' + capitalize(key));
+      var up = $('#up' + capitalize(key));
+      $('[data-pick="' + key + '"]').addEventListener('click', function () { input.click(); });
+      $('[data-remove="' + key + '"]').addEventListener('click', function () { input.value = ''; clearPhoto(key); });
+      input.addEventListener('change', function () {
+        if (input.files && input.files[0]) setPhoto(key, URL.createObjectURL(input.files[0]), input.files[0].name);
+      });
+      ['dragover', 'dragenter'].forEach(function (ev) { up.addEventListener(ev, function (e) { e.preventDefault(); up.classList.add('drag'); }); });
+      ['dragleave', 'drop'].forEach(function (ev) { up.addEventListener(ev, function (e) { e.preventDefault(); up.classList.remove('drag'); }); });
+      up.addEventListener('drop', function (e) {
+        var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+        if (f && f.type.indexOf('image/') === 0) setPhoto(key, URL.createObjectURL(f), f.name);
+      });
+    });
+
+    els.btnEjemplo.addEventListener('click', function () {
+      setPhoto('cerrada', 'assets/ejemplo-cerrada.jpg', 'ejemplo-cerrada.jpg');
+      setPhoto('abierta', 'assets/ejemplo-abierta.jpg', 'ejemplo-abierta.jpg');
+      setStatus('Ejemplo cargado: el personaje del Barça, con su versión de boca abierta generada a partir de tu imagen. Cuando quieras, sube tus propias fotos encima.');
+    });
+
+    /* Alineación de la foto abierta */
+    function applyAlign() {
+      var w = S.cerrada ? S.cerrada.w : 1000;
+      var dx = (S.align.x / w) * 100, dy = (S.cerrada ? S.align.y / S.cerrada.h : 0) * 100;
+      els.imgAbierta.style.transform = 'translate(' + dx + '%, ' + dy + '%) scale(' + S.align.s + ')';
+      els.alXv.textContent = S.align.x + ' px';
+      els.alYv.textContent = S.align.y + ' px';
+      els.alSv.textContent = Math.round(S.align.s * 100) + '%';
+    }
+    els.alX.addEventListener('input', function () { S.align.x = +els.alX.value; applyAlign(); });
+    els.alY.addEventListener('input', function () { S.align.y = +els.alY.value; applyAlign(); });
+    els.alS.addEventListener('input', function () { S.align.s = +els.alS.value / 100; applyAlign(); });
+
+    function updateStage() {
+      var c = S.cerrada, a = S.abierta;
+      els.imgCerrada.classList.toggle('hidden', !c);
+      els.imgAbierta.classList.toggle('hidden', !a);
+      els.stageEmpty.classList.toggle('hidden', !!c);
+      if (c) {
+        els.imgCerrada.src = c.url;
+        els.stage.style.aspectRatio = stageAspect(c);
+        els.stageRes.textContent = 'Salida: ' + outputSize().w + ' × ' + outputSize().h + ' px';
+      } else {
+        els.stage.style.aspectRatio = '';
+        els.stageRes.textContent = '';
+      }
+      if (a) els.imgAbierta.src = a.url;
+      els.alignBox.classList.toggle('hidden', !(c && a));
+      var mismatch = false;
+      if (c && a) {
+        var ra = c.w / c.h, rb = a.w / a.h;
+        mismatch = Math.abs(ra - rb) / ra > 0.03;
+      }
+      els.warnAspect.classList.toggle('hidden', !mismatch);
+      els.stageState.textContent = c && a ? 'Listo para hablar' : (c ? 'Falta la boca abierta' : (a ? 'Falta la boca cerrada' : 'Sin fotos'));
+      els.stageState.classList.toggle('live', !!(c && a));
+      els.btnTestMouth.disabled = !(c && a);
+      applyAlign();
+      updateFmtHint();
+    }
+    function stageAspect(c) {
+      if (S.format === 'vertical') return '9 / 16';
+      if (S.format === 'cuadrado') return '1 / 1';
+      return c.w + ' / ' + c.h;
+    }
+    function outputSize() {
+      var c = S.cerrada || { w: 1080, h: 1920 };
+      if (S.format === 'vertical') {
+        var h = 1920, w = 1080;
+        if (c.w / c.h > 9 / 16) { /* imagen ancha: manda el alto */ }
+        return { w: w, h: h };
+      }
+      if (S.format === 'cuadrado') {
+        var side = Math.min(Math.max(c.w, c.h), 1920);
+        return { w: side, h: side };
+      }
+      return { w: c.w, h: c.h };
+    }
+    function updateFmtHint() {
+      var o = outputSize();
+      if (S.format === 'original') els.fmtHint.textContent = S.cerrada ? 'El video sale con los píxeles exactos de tu foto: ' + o.w + ' × ' + o.h + '.' : 'El video sale con los píxeles exactos de tu foto; el tamaño se calcula en cuanto la subas.';
+      else if (S.format === 'vertical') els.fmtHint.textContent = 'Recorte vertical a 1080 × 1920, el tamaño de Reels y TikTok.';
+      else els.fmtHint.textContent = 'Recorte cuadrado a ' + o.w + ' × ' + o.h + '.';
+    }
+
+    /* Probar boca */
+    var testTimer = null;
+    els.btnTestMouth.addEventListener('click', function () {
+      if (testTimer) { clearInterval(testTimer); testTimer = null; setMouth(false); els.btnTestMouth.textContent = 'Probar boca'; return; }
+      var n = 0;
+      els.btnTestMouth.textContent = 'Detener prueba';
+      testTimer = setInterval(function () {
+        n++;
+        setMouth(n % 2 === 1);
+        if (n > 14) { clearInterval(testTimer); testTimer = null; setMouth(false); els.btnTestMouth.textContent = 'Probar boca'; }
+      }, 170);
+    });
+    function setMouth(open) {
+      S.mouthOpen = open;
+      els.stage.classList.toggle('open', open);
+    }
+
+    /* ================= TEXTO Y VOCES ================= */
+    var CLOUD_VOICES = [
+      ['es-MX-DaliaNeural', 'Dalia — México · femenina', 'es-MX'],
+      ['es-MX-JorgeNeural', 'Jorge — México · masculino', 'es-MX'],
+      ['es-ES-ElviraNeural', 'Elvira — España · femenina', 'es-ES'],
+      ['es-ES-AlvaroNeural', 'Álvaro — España · masculino', 'es-ES'],
+      ['es-CO-SalomeNeural', 'Salomé — Colombia · femenina', 'es-CO'],
+      ['es-CO-GonzaloNeural', 'Gonzalo — Colombia · masculino', 'es-CO'],
+      ['es-AR-ElenaNeural', 'Elena — Argentina · femenina', 'es-AR'],
+      ['es-AR-TomasNeural', 'Tomás — Argentina · masculino', 'es-AR'],
+      ['es-CL-CatalinaNeural', 'Catalina — Chile · femenina', 'es-CL'],
+      ['es-CL-LorenzoNeural', 'Lorenzo — Chile · masculino', 'es-CL'],
+      ['es-PE-CamilaNeural', 'Camila — Perú · femenina', 'es-PE'],
+      ['es-VE-PaolaNeural', 'Paola — Venezuela · femenina', 'es-VE'],
+      ['es-US-AlonsoNeural', 'Alonso — Estados Unidos · masculino', 'es-US'],
+      ['es-US-PalomaNeural', 'Paloma — Estados Unidos · femenina', 'es-US']
+    ];
+    CLOUD_VOICES.forEach(function (v) {
+      var o = document.createElement('option');
+      o.value = v[0]; o.textContent = v[1]; o.setAttribute('data-lang', v[2]);
+      els.voiceCloud.appendChild(o);
+    });
+
+    var deviceVoices = [];
+    function loadDeviceVoices() {
+      if (!('speechSynthesis' in window)) {
+        els.deviceHint.textContent = 'Tu navegador no ofrece voces instaladas. Usa las Voces IA.';
+        els.voiceDevice.innerHTML = '<option value="">Sin voces disponibles</option>';
+        return;
+      }
+      var all = window.speechSynthesis.getVoices();
+      if (!all.length) return;
+      deviceVoices = all.slice().sort(function (a, b) {
+        var ea = a.lang.indexOf('es') === 0 ? 0 : 1, eb = b.lang.indexOf('es') === 0 ? 0 : 1;
+        return ea - eb || a.name.localeCompare(b.name);
+      });
+      var cur = els.voiceDevice.value;
+      els.voiceDevice.innerHTML = '';
+      deviceVoices.forEach(function (v, i) {
+        var o = document.createElement('option');
+        o.value = String(i);
+        o.textContent = v.name + ' — ' + v.lang + (v.default ? ' · predeterminada' : '');
+        els.voiceDevice.appendChild(o);
+      });
+      if (cur && deviceVoices[+cur]) els.voiceDevice.value = cur;
+    }
+    if ('speechSynthesis' in window) {
+      loadDeviceVoices();
+      window.speechSynthesis.onvoiceschanged = loadDeviceVoices;
+    }
+
+    /* Segmentados genéricos */
+    function segWire(attr, fn) {
+      $$('[data-' + attr + ']').forEach(function (b) {
+        b.addEventListener('click', function () {
+          $$('[data-' + attr + ']').forEach(function (x) { x.setAttribute('aria-pressed', 'false'); });
+          b.setAttribute('aria-pressed', 'true');
+          fn(b.getAttribute('data-' + attr));
+        });
+      });
+    }
+    segWire('engine', function (v) {
+      S.engine = v;
+      els.cloudControls.classList.toggle('hidden', v !== 'cloud');
+      els.deviceControls.classList.toggle('hidden', v !== 'device');
+      refreshStates();
+    });
+    segWire('format', function (v) { S.format = v; if (S.cerrada) { els.stage.style.aspectRatio = stageAspect(S.cerrada); els.stageRes.textContent = 'Salida: ' + outputSize().w + ' × ' + outputSize().h + ' px'; } updateFmtHint(); });
+    segWire('quality', function (v) { S.quality = v; });
+    segWire('captions', function (v) { S.captions = v; if (v === 'sin') els.captionPreview.classList.add('hidden'); });
+    segWire('head', function (v) { S.head = v; });
+
+    /* Fondo */
+    $$('#swatches .swatch').forEach(function (b) {
+      b.addEventListener('click', function () {
+        $$('#swatches .swatch').forEach(function (x) { x.setAttribute('aria-pressed', 'false'); });
+        b.setAttribute('aria-pressed', 'true');
+        S.bg = b.getAttribute('data-bg');
+        els.bgColor.value = S.bg;
+        els.stage.style.background = S.bg;
+      });
+    });
+    els.bgColor.addEventListener('input', function () {
+      S.bg = els.bgColor.value;
+      $$('#swatches .swatch').forEach(function (x) { x.setAttribute('aria-pressed', 'false'); });
+      els.stage.style.background = S.bg;
+    });
+    els.sens.addEventListener('input', function () { S.sens = +els.sens.value; els.sensV.textContent = S.sens; });
+
+    function rateVal() { return +els.rate.value / 100; }
+    function pitchVal() { return +els.pitch.value; }
+    function updateRatePitch() {
+      els.rateV.textContent = rateVal().toFixed(2) + '×';
+      var p = pitchVal();
+      els.pitchV.textContent = p === 0 ? 'Normal' : (p > 0 ? '+' + p : String(p));
+    }
+    els.rate.addEventListener('input', function () { updateRatePitch(); invalidateAudio(); estDur(); });
+    els.pitch.addEventListener('input', function () { updateRatePitch(); invalidateAudio(); });
+    els.voiceCloud.addEventListener('change', invalidateAudio);
+    els.voiceDevice.addEventListener('change', function () { if (S.engine === 'device') S.deviceReady = false; refreshStates(); });
+    updateRatePitch();
+
+    function estDur() {
+      var t = els.txt.value.trim();
+      if (!t) { els.durEst.textContent = ''; return; }
+      var words = t.split(/\s+/).length;
+      var secs = words / (2.55 * rateVal()) * (S.engine === 'device' ? 1 : 1);
+      els.durEst.textContent = 'Duración estimada: ' + fmtDur(secs);
+    }
+    els.txt.addEventListener('input', function () {
+      els.charCount.textContent = els.txt.value.length + ' / 1200 caracteres';
+      invalidateAudio();
+      estDur();
+      refreshStates();
+    });
+
+    function currentKey() {
+      return [S.engine, S.engine === 'cloud' ? els.voiceCloud.value : els.voiceDevice.value, els.rate.value, els.pitch.value, els.txt.value.trim()].join('|');
+    }
+    function audioIsFresh() {
+      if (S.engine === 'cloud') return !!S.audioBlob && S.audioKey === currentKey();
+      return S.deviceReady && S.audioKey === currentKey();
+    }
+    function invalidateAudio() {
+      if (S.audioKey && S.audioKey !== currentKey()) {
+        if (S.engine === 'cloud' && S.audioBlob) setStatus('Cambiaste el texto o la voz: genera el audio otra vez para usar el nuevo.');
+        S.deviceReady = false;
+      }
+      refreshStates();
+    }
+    function setStatus(msg, isErr) {
+      els.audioStatus.textContent = msg || '';
+      els.audioStatus.classList.toggle('err', !!isErr);
+    }
+
+    /* ================= AUDIO: VOCES IA (Edge TTS) ================= */
+    function splitText(text, max) {
+      var parts = [], rest = text.trim();
+      while (rest.length > max) {
+        var cut = -1;
+        var marks = ['. ', '… ', '! ', '? ', '; ', ', ', ' '];
+        for (var m = 0; m < marks.length && cut < 0; m++) {
+          var idx = rest.lastIndexOf(marks[m], max);
+          if (idx > max * 0.35) cut = idx + marks[m].length - 1;
+        }
+        if (cut < 0) cut = max;
+        parts.push(rest.slice(0, cut + (rest[cut] === ' ' ? 0 : 1)).trim());
+        rest = rest.slice(cut + 1).trim();
+      }
+      if (rest) parts.push(rest);
+      return parts.filter(Boolean);
+    }
+    function escapeSSML(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;'); }
+
+    function edgeTTS(text, voice, ratePct, pitchHz) {
+      var TOKEN = '6A5AA1D4EAFF4E9FB37E23D68491D6F4';
+      var ticks = Math.floor((Date.now() / 1000 + 11644473600) / 300) * 300;
+      return crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(ticks) + TOKEN)).then(function (hashBuf) {
+        var gec = Array.prototype.map.call(new Uint8Array(hashBuf), function (b) { return b.toString(16).padStart(2, '0'); }).join('').toUpperCase();
+        return new Promise(function (resolve, reject) {
+          var url = 'wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken=' + TOKEN + '&Sec-MS-GEC=' + gec + '&Sec-MS-GEC-Version=1-130.0.2849.68';
+          var ws;
+          try { ws = new WebSocket(url); } catch (e) { reject(new Error('Tu navegador no pudo abrir la conexión de voz.')); return; }
+          ws.binaryType = 'arraybuffer';
+          var chunks = [], words = [], settled = false;
+          var reqId = Array.prototype.map.call(crypto.getRandomValues(new Uint8Array(16)), function (b) { return b.toString(16).padStart(2, '0'); }).join('');
+          var timer = setTimeout(function () { finish(new Error('El servicio de voz tardó demasiado. Revisa tu conexión e inténtalo de nuevo.')); }, 45000);
+          function finish(err, val) {
+            if (settled) return; settled = true; clearTimeout(timer);
+            try { ws.close(); } catch (e) {}
+            if (err) reject(err); else resolve(val);
+          }
+          ws.onopen = function () {
+            var ts = new Date().toISOString();
+            ws.send('X-Timestamp:' + ts + '\r\nContent-Type:application/json; charset=utf-8\r\nPath:speech.config\r\n\r\n' +
+              JSON.stringify({ context: { synthesis: { audio: { metadataoptions: { sentenceBoundaryEnabled: 'false', wordBoundaryEnabled: 'true' }, outputFormat: 'audio-24khz-96kbitrate-mono-mp3' } } } }));
+            var lang = voice.slice(0, 5);
+            var ssml = "<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='" + lang + "'><voice name='" + voice + "'><prosody pitch='" + (pitchHz >= 0 ? '+' : '') + pitchHz + "Hz' rate='" + (ratePct >= 0 ? '+' : '') + ratePct + "%'>" + escapeSSML(text) + '</prosody></voice></speak>';
+            ws.send('X-RequestId:' + reqId + '\r\nContent-Type:application/ssml+xml\r\nX-Timestamp:' + ts + '\r\nPath:ssml\r\n\r\n' + ssml);
+          };
+          ws.onmessage = function (ev) {
+            if (typeof ev.data === 'string') {
+              if (ev.data.indexOf('Path:audio.metadata') >= 0) {
+                try {
+                  var body = ev.data.slice(ev.data.indexOf('\r\n\r\n') + 4);
+                  var meta = JSON.parse(body);
+                  (meta.Metadata || []).forEach(function (md) {
+                    if (md.Type === 'WordBoundary' && md.Data) {
+                      words.push({ t: md.Data.Offset / 10000000, d: md.Data.Duration / 10000000, text: md.Data.text && md.Data.text.Text ? md.Data.text.Text : '' });
+                    }
+                  });
+                } catch (e) {}
+              } else if (ev.data.indexOf('Path:turn.end') >= 0) {
+                if (chunks.length) finish(null, { blob: new Blob(chunks, { type: 'audio/mpeg' }), words: words });
+                else finish(new Error('El servicio de voz no devolvió audio.'));
+              }
+            } else {
+              var buf = new Uint8Array(ev.data);
+              if (buf.length < 2) return;
+              var hlen = (buf[0] << 8) | buf[1];
+              var header = new TextDecoder().decode(buf.subarray(2, 2 + hlen));
+              if (header.indexOf('Path:audio') >= 0 && header.indexOf('metadata') < 0) chunks.push(buf.subarray(2 + hlen));
+            }
+          };
+          ws.onerror = function () { finish(new Error('No se pudo conectar con el servicio de voz. Revisa tu conexión e inténtalo de nuevo.')); };
+          ws.onclose = function () {
+            if (chunks.length) finish(null, { blob: new Blob(chunks, { type: 'audio/mpeg' }), words: words });
+            else finish(new Error('La conexión de voz se cerró sin audio.'));
+          };
+        });
+      });
+    }
+
+    function estimatedWords(text) {
+      var raw = text.trim().split(/\s+/).filter(Boolean);
+      var totalChars = raw.reduce(function (a, w) { return a + w.length + 1; }, 0) || 1;
+      var totalSecs = (totalChars / 15.5) / rateVal();
+      var t = 0, out = [];
+      raw.forEach(function (w) {
+        var d = totalSecs * ((w.length + 1) / totalChars);
+        out.push({ t: t, d: d, text: w });
+        t += d;
+      });
+      return out;
+    }
+
+    els.btnAudio.addEventListener('click', function () {
+      var text = els.txt.value.trim();
+      if (!text) { setStatus('Escribe primero lo que va a decir tu avatar.', true); return; }
+      stopPlayback();
+      if (S.engine === 'device') {
+        S.deviceReady = true;
+        S.audioKey = currentKey();
+        S.audioWords = estimatedWords(text);
+        els.audioBox.classList.add('hidden');
+        setStatus('Voz del dispositivo lista. Pulsa «Escuchar con el avatar» para probarla y luego genera el video.');
+        refreshStates();
+        return;
+      }
+      var ctx = ensureCtx();
+      els.btnAudio.disabled = true;
+      setStatus('Generando el audio con la voz elegida…');
+      var voice = els.voiceCloud.value;
+      var ratePct = Math.round((rateVal() - 1) * 100);
+      var pitchHz = pitchVal() * 3;
+      var parts = splitText(text, 600);
+      var blobs = [], allWords = [], offset = 0;
+      var chain = Promise.resolve();
+      parts.forEach(function (part) {
+        chain = chain.then(function () {
+          return edgeTTS(part, voice, ratePct, pitchHz).then(function (r) {
+            blobs.push(r.blob);
+            r.words.forEach(function (w) { allWords.push({ t: w.t + offset, d: w.d, text: w.text }); });
+            return r.blob.arrayBuffer().then(function (ab) {
+              return ctx.decodeAudioData(ab).then(function (buf) { offset += buf.duration; });
+            });
+          });
+        });
+      });
+      chain.then(function () {
+        var blob = new Blob(blobs, { type: 'audio/mpeg' });
+        if (S.audioUrl) URL.revokeObjectURL(S.audioUrl);
+        S.audioBlob = blob;
+        S.audioUrl = URL.createObjectURL(blob);
+        S.audioWords = allWords.length ? allWords : estimatedWords(text);
+        S.audioKey = currentKey();
+        return blob.arrayBuffer().then(function (ab) { return ctx.decodeAudioData(ab); }).then(function (buf) { S.audioBuf = buf; });
+      }).then(function () {
+        els.audioEl.src = S.audioUrl;
+        els.dlAudio.href = S.audioUrl;
+        els.audioBox.classList.remove('hidden');
+        els.audioMeta.textContent = 'Duración ' + fmtDur(S.audioBuf ? S.audioBuf.duration : offset) + ' · MP3 · ' + fmtBytes(S.audioBlob.size);
+        setStatus('Audio listo. Escúchalo con el avatar y luego ve al paso 3.');
+        refreshStates();
+      }).catch(function (err) {
+        setStatus((err && err.message) ? err.message : 'No se pudo generar el audio.', true);
+      }).then(function () { refreshStates(); });
+    });
+
+    /* ================= REPRODUCCIÓN CON SINCRONÍA DE BOCA ================= */
+    S.playSeq = 0; S.generating = false;
+
+    function getSentences() {
+      if (S._sentFor === S.audioWords) return S._sentCache;
+      var sents = [], cur = [], start = 0;
+      S.audioWords.forEach(function (w, i) {
+        if (!cur.length) start = i;
+        cur.push(w.text);
+        if (/[.!?…]["'»)]*$/.test(w.text) || i === S.audioWords.length - 1) {
+          sents.push({ startIdx: start, endIdx: i, text: cur.join(' ') });
+          cur = [];
+        }
+      });
+      S._sentCache = sents; S._sentFor = S.audioWords;
+      return sents;
+    }
+    function sentenceFor(idx) {
+      var sents = getSentences();
+      for (var i = 0; i < sents.length; i++) if (idx >= sents[i].startIdx && idx <= sents[i].endIdx) return sents[i].text;
+      return '';
+    }
+    function updateWordUI(idx) {
+      if (idx === S.currentWord || idx < 0 || !S.audioWords[idx]) return;
+      S.currentWord = idx;
+      els.stageWord.textContent = S.audioWords[idx].text;
+      var s = sentenceFor(idx);
+      S.curCaption = s;
+      if (S.captions === 'con' && s) {
+        els.captionPreview.textContent = s;
+        els.captionPreview.classList.remove('hidden');
+      }
+    }
+    function wordIndexAt(t) {
+      var w = S.audioWords, idx = -1;
+      for (var i = 0; i < w.length; i++) { if (w[i].t <= t) idx = i; else break; }
+      return idx;
+    }
+    function setSpeakingUI(on) {
+      S.playing = on;
+      els.stage.classList.toggle('speaking', on);
+      els.stageBar.classList.toggle('hidden', !on);
+      if (!on) { els.captionPreview.classList.add('hidden'); S.currentWord = -1; S.curCaption = ''; els.stageWord.textContent = ''; }
+      els.stageState.textContent = on ? 'Hablando…' : (S.cerrada && S.abierta ? 'Listo para hablar' : els.stageState.textContent);
+      if (!on) updateStageStateOnly();
+      refreshStates();
+    }
+    function updateStageStateOnly() {
+      if (S.playing) return;
+      els.stageState.textContent = S.cerrada && S.abierta ? 'Listo para hablar' : (S.cerrada ? 'Falta la boca abierta' : (S.abierta ? 'Falta la boca cerrada' : 'Sin fotos'));
+      els.stageState.classList.toggle('live', !!(S.cerrada && S.abierta));
+    }
+
+    function playCloudAudio(dest, onended) {
+      var ctx = ensureCtx();
+      if (!ctx || !S.audioBuf) { if (onended) onended(); return; }
+      var seq = ++S.playSeq;
+      var src = ctx.createBufferSource();
+      src.buffer = S.audioBuf;
+      var analyser = ctx.createAnalyser();
+      analyser.fftSize = 512;
+      var gain = ctx.createGain();
+      src.connect(analyser); analyser.connect(gain); gain.connect(ctx.destination);
+      if (dest) { var g2 = ctx.createGain(); analyser.connect(g2); g2.connect(dest); }
+      S.curSource = src;
+      var startAt = ctx.currentTime + 0.06;
+      var data = new Uint8Array(analyser.fftSize);
+      var lastOpen = 0, doneCalled = false;
+      function finish() {
+        if (doneCalled) return; doneCalled = true;
+        cancelAnimationFrame(S.playRaf);
+        setMouth(false);
+        if (S.curSource === src) S.curSource = null;
+        setSpeakingUI(false);
+        if (onended) onended();
+      }
+      function loop() {
+        if (S.playSeq !== seq || S.curSource !== src) return;
+        analyser.getByteTimeDomainData(data);
+        var sum = 0;
+        for (var i = 0; i < data.length; i++) { var v = (data[i] - 128) / 128; sum += v * v; }
+        var rms = Math.sqrt(sum / data.length);
+        var thr = 0.02 + (100 - S.sens) * 0.0011;
+        var now = performance.now();
+        if (rms > thr) { setMouth(true); lastOpen = now; }
+        else if (now - lastOpen > 70) setMouth(false);
+        updateWordUI(wordIndexAt(ctx.currentTime - startAt));
+        S.playRaf = requestAnimationFrame(loop);
+      }
+      src.onended = finish;
+      setSpeakingUI(true);
+      try { src.start(startAt); } catch (e) { finish(); return; }
+      S.playRaf = requestAnimationFrame(loop);
+    }
+
+    function playDeviceSpeech(onended) {
+      if (!('speechSynthesis' in window)) { if (onended) onended(); return; }
+      var seq = ++S.playSeq;
+      var words = S.audioWords.length ? S.audioWords : estimatedWords(els.txt.value);
+      var total = words.length ? words[words.length - 1].t + words[words.length - 1].d : 4;
+      var u = new SpeechSynthesisUtterance(els.txt.value.trim());
+      var v = deviceVoices[+els.voiceDevice.value || 0];
+      if (v) u.voice = v;
+      u.rate = rateVal();
+      u.pitch = Math.min(2, Math.max(0, 1 + pitchVal() * 0.04));
+      S.curUtter = u;
+      var startT = performance.now(), doneCalled = false;
+      function cleanup() {
+        clearInterval(S.playTimer); clearTimeout(safety); clearInterval(resumeHack);
+        setMouth(false);
+        if (S.curUtter === u) S.curUtter = null;
+        setSpeakingUI(false);
+      }
+      function finish() { if (doneCalled) return; doneCalled = true; cleanup(); if (onended) onended(); }
+      S.playTimer = setInterval(function () {
+        if (S.playSeq !== seq) { clearInterval(S.playTimer); return; }
+        var t = (performance.now() - startT) / 1000;
+        var idx = wordIndexAt(t);
+        updateWordUI(idx);
+        var w = words[idx];
+        if (w && t < w.t + w.d * 0.92) setMouth(Math.random() > 0.22);
+        else setMouth(false);
+      }, 95);
+      var resumeHack = setInterval(function () {
+        if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) { window.speechSynthesis.pause(); window.speechSynthesis.resume(); }
+      }, 10000);
+      var safety = setTimeout(function () { if (!doneCalled) { try { window.speechSynthesis.cancel(); } catch (e) {} finish(); } }, total * 1000 + 6000);
+      u.onend = finish;
+      u.onerror = finish;
+      setSpeakingUI(true);
+      window.speechSynthesis.cancel();
+      setTimeout(function () { if (S.playSeq === seq && !doneCalled) window.speechSynthesis.speak(u); }, 60);
+    }
+
+    function stopPlayback() {
+      S.playSeq++;
+      if (S.curSource) { try { S.curSource.onended = null; S.curSource.stop(); } catch (e) {} S.curSource = null; }
+      cancelAnimationFrame(S.playRaf);
+      if (S.playTimer) { clearInterval(S.playTimer); S.playTimer = null; }
+      if ('speechSynthesis' in window) { try { window.speechSynthesis.cancel(); } catch (e) {} }
+      S.curUtter = null;
+      setMouth(false);
+      if (S.playing) setSpeakingUI(false); else refreshStates();
+    }
+
+    els.btnPlay.addEventListener('click', function () {
+      ensureCtx();
+      if (S.engine === 'cloud') {
+        if (!audioIsFresh() || !S.audioBuf) { setStatus('Primero genera el audio.', true); return; }
+        playCloudAudio(null, null);
+      } else {
+        if (!audioIsFresh()) { setStatus('Primero prepara la voz.', true); return; }
+        playDeviceSpeech(null);
+      }
+    });
+    els.btnStop.addEventListener('click', stopPlayback);
+    els.audioEl.addEventListener('play', function () { /* el reproductor nativo no mueve la boca; se pausa si empieza la animación */ });
+
+    /* ================= GRABACIÓN DEL VIDEO ================= */
+    function pickMime(forceWebm) {
+      if (!window.MediaRecorder) return '';
+      var list = forceWebm
+        ? ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm']
+        : ['video/mp4;codecs="avc1.640033,mp4a.40.2"', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
+      for (var i = 0; i < list.length; i++) { try { if (MediaRecorder.isTypeSupported(list[i])) return list[i]; } catch (e) {} }
+      return '';
+    }
+    function roundRectPath(g, x, y, w, h, r) {
+      g.beginPath();
+      g.moveTo(x + r, y);
+      g.arcTo(x + w, y, x + w, y + h, r);
+      g.arcTo(x + w, y + h, x, y + h, r);
+      g.arcTo(x, y + h, x, y, r);
+      g.arcTo(x, y, x + w, y, r);
+      g.closePath();
+    }
+    function wrapLines(g, text, maxW) {
+      var words = text.split(/\s+/), lines = [], cur = '';
+      words.forEach(function (wd) {
+        var test = cur ? cur + ' ' + wd : wd;
+        if (g.measureText(test).width > maxW && cur) { lines.push(cur); cur = wd; }
+        else cur = test;
+      });
+      if (cur) lines.push(cur);
+      return lines.slice(0, 3);
+    }
+    function drawCaption(g, W, H, text) {
+      if (!text) return;
+      var fs = Math.max(24, Math.round(W * 0.048));
+      g.font = '800 ' + fs + 'px Archivo, sans-serif';
+      var lines = wrapLines(g, text, W * 0.84);
+      if (!lines.length) return;
+      var lh = fs * 1.28, padX = fs * 0.55, padY = fs * 0.34;
+      var maxW = 0;
+      lines.forEach(function (l) { maxW = Math.max(maxW, g.measureText(l).width); });
+      var bw = maxW + padX * 2, bh = lines.length * lh + padY * 2;
+      var x = (W - bw) / 2, y = H - bh - H * 0.045;
+      g.fillStyle = 'rgba(0,0,0,0.62)';
+      roundRectPath(g, x, y, bw, bh, Math.round(fs * 0.28));
+      g.fill();
+      g.fillStyle = '#ffffff';
+      g.textAlign = 'center'; g.textBaseline = 'middle';
+      lines.forEach(function (l, i) { g.fillText(l, W / 2, y + padY + lh * (i + 0.5)); });
+    }
+    function coverRect(img, W, H) {
+      var s = Math.max(W / img.naturalWidth, H / img.naturalHeight);
+      var dw = img.naturalWidth * s, dh = img.naturalHeight * s;
+      return { x: (W - dw) / 2, y: (H - dh) / 2, w: dw, h: dh, s: s };
+    }
+    function drawFrame(g, W, H, now) {
+      g.fillStyle = S.bg;
+      g.fillRect(0, 0, W, H);
+      var c = S.cerrada, a = S.abierta;
+      if (!c) return;
+      var bob = S.head === 'suave' ? Math.sin(now / 850) * H * 0.004 : 0;
+      var rc = coverRect(c.img, W, H);
+      g.drawImage(c.img, rc.x, rc.y + bob, rc.w, rc.h);
+      if (S.mouthOpen && a) {
+        var ra = coverRect(a.img, W, H);
+        var offX = S.align.x * rc.s, offY = S.align.y * rc.s;
+        g.save();
+        g.translate(W / 2 + offX, H / 2 + offY + bob);
+        g.scale(S.align.s, S.align.s);
+        g.drawImage(a.img, ra.x - W / 2, ra.y - H / 2, ra.w, ra.h);
+        g.restore();
+      }
+      if (S.captions === 'con') drawCaption(g, W, H, S.curCaption || '');
+    }
+
+    els.btnVideo.addEventListener('click', function () {
+      if (S.recording) return;
+      if (!S.cerrada || !S.abierta) { setStatus('Sube las dos fotos antes de generar el video.', true); window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+      if (!audioIsFresh()) { setStatus('Genera primero el audio del paso 2.', true); return; }
+      if (!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) {
+        setStatus('Este navegador no puede grabar video. Prueba con Chrome o Safari actualizados.', true); return;
+      }
+      ensureCtx();
+      S.recording = true; S.cancelRec = false;
+      els.resultBox.classList.add('hidden');
+      els.recBox.classList.remove('hidden');
+      els.recStatus.textContent = 'Grabando en tiempo real… tu avatar está hablando.';
+      els.recBar.style.width = '0%';
+      refreshStates();
+
+      var size = outputSize(), W = size.w, H = size.h;
+      var canvas = document.createElement('canvas');
+      canvas.width = W; canvas.height = H;
+      var g = canvas.getContext('2d');
+      var stream = canvas.captureStream(30);
+      var dest = null;
+      if (S.engine === 'cloud' && S.actx) {
+        dest = S.actx.createMediaStreamDestination();
+        var at = dest.stream.getAudioTracks()[0];
+        if (at) stream.addTrack(at);
+      }
+      var mime = pickMime(S._retryAsWebm === true);
+      var isMp4 = mime.indexOf('mp4') >= 0;
+      var rec;
+      try {
+        rec = new MediaRecorder(stream, {
+          mimeType: mime || undefined,
+          videoBitsPerSecond: S.quality === 'max' ? 28000000 : 12000000,
+          audioBitsPerSecond: 192000
+        });
+      } catch (e) {
+        rec = new MediaRecorder(stream);
+        isMp4 = (rec.mimeType || '').indexOf('mp4') >= 0;
+      }
+      var chunks = [];
+      rec.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
+
+      var expected = S.engine === 'cloud' && S.audioBuf ? S.audioBuf.duration :
+        (S.audioWords.length ? S.audioWords[S.audioWords.length - 1].t + S.audioWords[S.audioWords.length - 1].d : 5);
+      var t0 = performance.now();
+      var prog = setInterval(function () {
+        var p = Math.min(98, ((performance.now() - t0) / 1000) / Math.max(expected, 1) * 100);
+        els.recBar.style.width = p + '%';
+      }, 200);
+      var drawRaf = 0;
+      function drawLoop(now) { drawFrame(g, W, H, now); if (S.recording) drawRaf = requestAnimationFrame(drawLoop); }
+      drawRaf = requestAnimationFrame(drawLoop);
+
+      var finished = false;
+      function done() {
+        if (finished) return; finished = true;        setTimeout(function () {
+          S.recording = false;
+          cancelAnimationFrame(drawRaf);
+          clearInterval(prog);
+          try { rec.stop(); } catch (e) { finishRec(); }
+        }, 320);
+      }
+      var safety = setTimeout(function () { if (!finished) { stopPlayback(); done(); } }, expected * 1000 + 20000);
+      S._recDone = done;
+
+      function finishRec() {
+        clearTimeout(safety);
+        S._recDone = null;
+        els.recBox.classList.add('hidden');
+        if (S.cancelRec) { setStatus('Grabación cancelada.'); refreshStates(); return; }
+        var type = mime || rec.mimeType || 'video/webm';
+        var blob = new Blob(chunks, { type: type });
+        if (blob.size < 1000) {
+          if (!S._retryAsWebm) {
+            S._retryAsWebm = true;
+            setStatus('Ese formato no entregó datos en tu navegador; grabando de nuevo en WebM…');
+            refreshStates();
+            setTimeout(function () { els.btnVideo.click(); }, 80);
+            return;
+          }
+          S._retryAsWebm = false;
+          setStatus('La grabación salió vacía. Prueba de nuevo; si pasa otra vez, cambia el formato de salida.', true);
+          refreshStates();
+          return;
+        }
+        S._retryAsWebm = false;
+        if (S.resultUrl) URL.revokeObjectURL(S.resultUrl);
+        S.resultUrl = URL.createObjectURL(blob);
+        var ext = isMp4 ? 'mp4' : 'webm';
+        els.resultVideo.src = S.resultUrl;
+        els.dlVideo.href = S.resultUrl;
+        els.dlVideo.setAttribute('download', 'avatar-hablando.' + ext);
+        els.dlVideo.textContent = 'Descargar video ' + ext.toUpperCase();
+        els.resultMeta.innerHTML = '<b>' + W + ' × ' + H + ' px</b> · ' + ext.toUpperCase() + ' · Duración ' + fmtDur(expected) + ' · ' + fmtBytes(blob.size);
+        els.resultNote.textContent = S.engine === 'device'
+          ? 'Este video se grabó con la voz de tu dispositivo: en la mayoría de los navegadores esa voz suena durante la grabación pero no queda incrustada en el archivo. Para un video con el audio dentro, usa las Voces IA.'
+          : 'Audio y video van en el mismo archivo, a la resolución completa elegida. Súbelo directo a Reels o TikTok.';
+        els.resultBox.classList.remove('hidden');
+        setStatus('');
+        refreshStates();
+        els.resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+      rec.onstop = finishRec;
+
+      rec.start(250);
+      if (S.engine === 'cloud') playCloudAudio(dest, done);
+      else playDeviceSpeech(done);
+    });
+    els.btnCancelRec.addEventListener('click', function () {
+      S.cancelRec = true;
+      stopPlayback();
+      if (S._recDone) S._recDone();
+    });
+    els.btnAgain.addEventListener('click', function () {
+      els.resultBox.classList.add('hidden');
+      refreshStates();
+    });
+
+    /* ================= ESTADO GENERAL ================= */
+    function refreshStates() {
+      var hasText = els.txt.value.trim().length > 0;
+      var fotos = !!(S.cerrada && S.abierta);
+      var fresh = audioIsFresh();
+      $$('.checklist li').forEach(function (li) {
+        var k = li.getAttribute('data-k');
+        li.classList.toggle('done',
+          (k === 'fotos' && fotos) ||
+          (k === 'texto' && hasText) ||
+          (k === 'audio' && fresh) ||
+          (k === 'video' && !!S.resultUrl));
+      });
+      els.btnAudio.disabled = !hasText || S.playing || S.recording || S.generating;
+      els.btnAudio.textContent = S.generating ? 'Generando…' : (S.engine === 'device' ? 'Preparar voz' : 'Generar audio');
+      els.btnPlay.disabled = !fresh || S.playing || S.recording;
+      els.btnStop.disabled = !S.playing || S.recording;
+      els.btnVideo.disabled = !(fotos && hasText && fresh) || S.playing || S.recording;
+      els.btnVideo.textContent = S.recording ? 'Grabando…' : 'Generar video';
+      if (!S.playing) updateStageStateOnly();
+    }
+
+    /* Arranque */
+    updateStage();
+    estDur();
+    refreshStates();
+    </script>
+  </body>
+</html>
